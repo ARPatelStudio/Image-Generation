@@ -8,8 +8,9 @@ import os
 
 app = FastAPI()
 
-# ⚠️ NAYA BADLAV: Environment variable se token uthao
-HF_TOKEN = os.getenv("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")
+# ⚠️ FIX: os.getenv ke andar variable ka NAAM aata hai, actual token nahi.
+# Actual token Render ke dashboard mein "HF_TOKEN" naam se save hoga.
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 print("🚀 Loading SDXL-Turbo Model... (isme server start hone par 1-2 minute lagenge)")
 
