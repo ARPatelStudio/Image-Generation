@@ -8,16 +8,18 @@ import os
 
 app = FastAPI()
 
+# ⚠️ NAYA BADLAV: Environment variable se token uthao
+HF_TOKEN = os.getenv("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")
+
 print("🚀 Loading SDXL-Turbo Model... (isme server start hone par 1-2 minute lagenge)")
 
-# SDXL-Turbo duniya ka fastest model hai (1-4 steps mein image banata hai)
-# torch.float32 use kar rahe hain taaki standard Render CPU par chal sake
+# Token pass kar diya taaki fast download ho aur rate limit ka error na aaye
 pipe = AutoPipelineForText2Image.from_pretrained(
     "stabilityai/sdxl-turbo", 
-    torch_dtype=torch.float32
+    torch_dtype=torch.float32,
+    token=HF_TOKEN
 )
 
-# Agar Render par GPU wala tier liya hai toh 'cuda', warna 'cpu'
 device = "cuda" if torch.cuda.is_available() else "cpu"
 pipe.to(device)
 print(f"✅ Model Loaded Successfully on {device.upper()}!")
@@ -28,13 +30,9 @@ class ImageRequest(BaseModel):
 @app.post("/generate-image")
 def generate_image(req: ImageRequest):
     try:
-        # SDXL-Turbo sir 2 steps mein clear image de deta hai (Super fast)
         image = pipe(prompt=req.prompt, num_inference_steps=2, guidance_scale=0.0).images[0]
-        
-        # Image ko Vertical (Shorts size) mein resize karna
         image = image.resize((720, 1280))
         
-        # n8n ke liye Base64 mein convert karna (Taki disk error na aaye)
         buffered = BytesIO()
         image.save(buffered, format="JPEG")
         img_b64 = base64.b64encode(buffered.getvalue()).decode("utf-8")
